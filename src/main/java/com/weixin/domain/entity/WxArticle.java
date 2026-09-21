@@ -17,6 +17,7 @@ public class WxArticle {
     private String author;
     private String digest;
     private String content;
+    private String contentMd;
     private String thumbMediaId;
     private String draftMediaId;
     private Integer status;

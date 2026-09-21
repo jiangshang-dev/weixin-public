@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +49,11 @@ public class AdminController {
         return R.ok(wxArticleService.latest());
     }
 
+    @GetMapping("/admin/articles/{id}")
+    public R<WxArticle> article(@PathVariable Long id) {
+        return R.ok(wxArticleService.getById(id));
+    }
+
     @PostMapping("/admin/wechat/image")
     public R<Map<String, String>> image(@RequestParam("file") MultipartFile file) {
         Map<String, String> data = new LinkedHashMap<>();
@@ -60,8 +66,9 @@ public class AdminController {
                               @RequestParam(required = false) String author,
                               @RequestParam(required = false) String digest,
                               @RequestParam String content,
+                              @RequestParam(required = false) String contentMd,
                               @RequestParam("cover") MultipartFile cover) {
-        return R.ok(wxArticleService.publishDraft(title, author, digest, content, cover));
+        return R.ok(wxArticleService.publishDraft(title, author, digest, content, contentMd, cover));
     }
 
     @GetMapping("/open/ping")

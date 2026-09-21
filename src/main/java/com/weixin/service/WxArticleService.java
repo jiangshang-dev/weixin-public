@@ -21,7 +21,14 @@ public class WxArticleService {
     public List<WxArticle> latest() {
         return wxArticleMapper.selectList(com.baomidou.mybatisplus.core.toolkit.Wrappers.lambdaQuery(WxArticle.class)
                 .orderByDesc(WxArticle::getId)
-                .last("limit 20"));
+                .last("limit 50"));
+    }
+
+    public WxArticle getById(Long id) {
+        AssertUtil.notNull(id, "文章不存在");
+        WxArticle article = wxArticleMapper.selectById(id);
+        AssertUtil.notNull(article, "文章不存在");
+        return article;
     }
 
     public String uploadContentImage(MultipartFile file) {
@@ -30,7 +37,7 @@ public class WxArticleService {
         return wechatMpService.uploadContentImage(file);
     }
 
-    public WxArticle publishDraft(String title, String author, String digest, String content, MultipartFile cover) {
+    public WxArticle publishDraft(String title, String author, String digest, String content, String contentMd, MultipartFile cover) {
         String name = StrUtil.trim(title);
         String html = StrUtil.trim(content);
         AssertUtil.isNotBlank(name, "请填写标题");
@@ -47,6 +54,7 @@ public class WxArticleService {
         article.setAuthor(authorName);
         article.setDigest(summary);
         article.setContent(html);
+        article.setContentMd(StrUtil.nullToDefault(contentMd, ""));
         article.setStatus(0);
         article.setCreateTime(LocalDateTime.now());
         article.setUpdateTime(LocalDateTime.now());

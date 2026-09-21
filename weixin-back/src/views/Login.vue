@@ -25,7 +25,7 @@ async function submit() {
   try {
     const data = await http.post('/api/admin/login', form)
     localStorage.setItem('weixin-token', data.token)
-    router.push('/')
+    router.push('/editor')
   } finally {
     loading.value = false
   }

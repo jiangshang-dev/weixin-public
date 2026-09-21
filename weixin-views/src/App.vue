@@ -6,7 +6,19 @@
 </template>
 
 <style scoped>
-main { max-width: 720px; margin: 80px auto; padding: 0 20px; font-family: sans-serif; }
-h1 { font-weight: 600; }
-p { color: #6f675e; line-height: 1.7; }
+main {
+  max-width: 720px;
+  margin: 80px auto;
+  padding: 0 20px;
+  font-family: sans-serif;
+}
+
+h1 {
+  font-weight: 600;
+}
+
+p {
+  color: #6f675e;
+  line-height: 1.7;
+}
 </style>

@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS wx_article (
     author         VARCHAR(16)   NULL,
     digest         VARCHAR(120)  NULL,
     content        MEDIUMTEXT    NOT NULL,
+    content_md     MEDIUMTEXT    NULL,
     thumb_media_id VARCHAR(128)  NULL,
     draft_media_id VARCHAR(128)  NULL,
     status         TINYINT       NOT NULL DEFAULT 0 COMMENT '0 未同步 1 已进草稿箱 2 失败',
