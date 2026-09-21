@@ -1,0 +1,32 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: weixin-public
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3308/weixin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+weixin:
+  jwt-secret: weixin-public-jwt-secret-key-2026
+  jwt-expire-hours: 168
+  mp:
+    app-id: wx0917a833abd96781
+    app-secret: 47835d58bf0af80266829d7ca1fd42bd
