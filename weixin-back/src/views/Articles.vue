@@ -25,13 +25,17 @@
         row-key="id"
         :loading="loading"
         :pagination="{ pageSize: 10, hideOnSinglePage: true }"
+        :scroll="{ x: 720 }"
         class="records-table"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'title'">
             <div class="title-cell">
               <span class="title-text">{{ record.title }}</span>
-              <span v-if="record.digest" class="digest">{{ record.digest }}</span>
+              <span class="title-meta">
+                <em v-if="record.author">{{ record.author }}</em>
+                <span v-if="record.digest" class="digest">{{ record.digest }}</span>
+              </span>
             </div>
           </template>
           <template v-else-if="column.key === 'status'">
@@ -101,11 +105,10 @@ const drawerOpen = ref(false)
 const current = ref(null)
 
 const columns = [
-  { title: '标题', dataIndex: 'title', key: 'title' },
-  { title: '作者', dataIndex: 'author', key: 'author', width: 110 },
-  { title: '状态', key: 'status', width: 120 },
-  { title: '时间', key: 'createTime', width: 170 },
-  { title: '操作', key: 'action', width: 160 }
+  { title: '文章', dataIndex: 'title', key: 'title' },
+  { title: '状态', key: 'status', width: 130 },
+  { title: '提交时间', key: 'createTime', width: 180 },
+  { title: '操作', key: 'action', width: 155 }
 ]
 
 const stats = computed(() => {
@@ -255,7 +258,7 @@ onMounted(load)
 .title-cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 .title-text {
@@ -263,17 +266,30 @@ onMounted(load)
   color: var(--wx-ink);
   font-weight: 500;
 }
+.title-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.title-meta em {
+  flex: none;
+  font-style: normal;
+  font-size: 11px;
+  color: #8a948f;
+}
 .digest {
   font-size: 11.5px;
   color: #a3ada8;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 460px;
+  max-width: 420px;
 }
 .time {
   font-size: 12.5px;
   color: #7a847f;
+  white-space: nowrap;
 }
 
 /* ---------- 详情 ---------- */

@@ -219,7 +219,7 @@ const coverFile = ref(null)
 const coverUrl = ref('')
 const publishing = ref(false)
 
-const previewHtml = computed(() => toWechatHtml(form.content) || '<p style="color:#9aa4a0">正文会显示在这里</p>')
+const previewHtml = computed(() => toWechatHtml(form.content, { title: form.title }) || '<p style="color:#9aa4a0">正文会显示在这里</p>')
 const wordCount = computed(() => form.content.replace(/\s/g, '').length)
 const readMinutes = computed(() => Math.max(1, Math.round(wordCount.value / 400)))
 
@@ -339,7 +339,7 @@ async function publish() {
     data.append('title', form.title)
     data.append('author', form.author)
     data.append('digest', form.digest)
-    data.append('content', toWechatHtml(form.content))
+    data.append('content', toWechatHtml(form.content, { title: form.title }))
     data.append('contentMd', form.content)
     data.append('cover', coverFile.value)
     const article = await http.post('/api/admin/draft', data)

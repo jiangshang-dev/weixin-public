@@ -142,8 +142,16 @@ function renderWithCards(markdown) {
   return html
 }
 
-export function toWechatHtml(markdown) {
-  const inner = renderWithCards(markdown).trim()
+export function toWechatHtml(markdown, options = {}) {
+  let source = markdown || ''
+  const articleTitle = String(options.title || '').trim()
+  if (articleTitle) {
+    const heading = source.match(/^\s*#\s+(.+?)[ \t]*(?:\n|$)/)
+    if (heading && heading[1].trim() === articleTitle) {
+      source = source.slice(heading[0].length).replace(/^\s+/, '')
+    }
+  }
+  const inner = renderWithCards(source).trim()
   if (!inner) return ''
   return `<section style="font-size:16px;color:#333333;letter-spacing:0.5px;">${inner}</section>`
 }

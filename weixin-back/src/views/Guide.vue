@@ -160,8 +160,13 @@ const faqs = [
 .hero :deep(.ant-btn-primary) {
   background: #7ce0c3;
   border-color: #7ce0c3;
-  color: #10231e;
+  color: #10231e !important;
   font-weight: 600;
+}
+.hero :deep(.ant-btn-primary:hover) {
+  background: #9df0d6 !important;
+  border-color: #9df0d6 !important;
+  color: #10231e !important;
 }
 
 .steps {
