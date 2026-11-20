@@ -30,13 +30,17 @@ public class AiController {
 
     private final AiService aiService;
 
-    /** 流式生成，SSE 事件：meta / delta / done / error */
+    /**
+     * 流式生成，SSE 事件：meta / delta / done / error
+     */
     @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@Valid @RequestBody AiDtos.AiWriteRequest request) {
         return aiService.stream(request);
     }
 
-    /** 停止指定记录的生成 */
+    /**
+     * 停止指定记录的生成
+     */
     @PostMapping("/records/{id}/stop")
     public R<Void> stop(@PathVariable Long id) {
         aiService.stop(id);
