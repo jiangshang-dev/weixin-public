@@ -1,8 +1,8 @@
 # weixin-public
 
 <p align="center">
-  <strong>微信公众号 Markdown 写作 → 一键写入草稿箱</strong><br/>
-  自己写、自己排、自己同步。告别「秀米排版 → 复制粘贴 → 格式乱掉」。
+  <strong>AI / Markdown 写作 → 一键写入公众号草稿箱</strong><br/>
+  AI 起稿、自己润色、一键同步。告别「秀米排版 → 复制粘贴 → 格式乱掉」。
 </p>
 
 <p align="center">
@@ -47,6 +47,8 @@
 
 **不会自动群发。** 最后发布权留在人手里，更安全。
 
+另外提供 **AI 写作**：选一个行业模板、写清楚要求，AI 会按公众号排版结构**流式生成初稿**，生成记录可随时查看、引用到编辑器继续修改。
+
 ```text
 Markdown 编辑器 ──► 微信兼容 HTML ──► 封面/图片素材
                                       │
@@ -55,14 +57,19 @@ Markdown 编辑器 ──► 微信兼容 HTML ──► 封面/图片素材
                                       │
                                       ▼
                          微信后台人工确认发布
+
+AI 写作 ──► Markdown 初稿 ──► 编辑器润色 ──► 同上
 ```
 
 ---
 
 ## 功能亮点
 
+- **AI 写作**：选行业模板、填写写作要求，流式生成 Markdown 初稿；生成记录可查看、引用到编辑器
+- **行业模板库**：科技、美妆、餐饮、教育、健康、金融、旅行等 14 个行业模板，可直接套用
 - **Markdown 写作**：工具栏排版，右侧实时「公众号效果」预览
-- **样式块**：柔灰 / 蓝绿橙红提示、引用、夹子、钉子、木板、黑板、便签、阴影、缎带、双线边框、苹果三色点代码框（`:::wx-xxx` / `` ```apple ``）
+- **多机型预览**：经典预览 / iPhone Duo / iPhone 18 / iPhone 18 Pro / iPhone 18 Pro Max 自由切换
+- **样式块**：柔灰 / 蓝绿橙红提示、引用、夹子、钉子、木板、黑板、便签、阴影、缎带、双线边框、章节标题条、深色金句、时间轴、大引号、苹果三色点代码框（`:::wx-xxx` / `` ```apple ``）
 - **素材直传微信**：正文图 `uploadimg`，封面 `add_material`
 - **草稿箱同步**：调用 `draft/add`，记录同步状态与失败信息
 - **发送记录**：历史文章可预览，有 Markdown 原文可载入再发
@@ -75,6 +82,7 @@ Markdown 编辑器 ──► 微信兼容 HTML ──► 封面/图片素材
 | 层 | 技术 |
 | --- | --- |
 | 后端 | Java 21 · Spring Boot 4.0.8 · Spring Security · MyBatis-Plus · Hutool · MySQL |
+| AI | AgentScope 2.0 · OpenAI 兼容接口（vLLM / Ollama / DeepSeek 等）· SSE 流式输出 |
 | 管理后台 | Vue 3 · Vite · Ant Design Vue · md-editor-v3 |
 | 用户前台 | Vue 3 · Vite · Ant Design Vue |
 | 微信 | stable_token · 素材上传 · 草稿箱 |
@@ -110,6 +118,8 @@ weixin-public/
 
 ```bash
 mysql -u root -p < sql/init.sql
+# 已有库补充 AI 生成记录表：
+# mysql -u root -p < sql/alter_ai_record.sql
 # 如有 Markdown 字段升级：
 # mysql -u root -p < sql/alter_content_md.sql
 ```
@@ -137,6 +147,52 @@ weixin:
 ```
 
 > **安全提醒**：`AppSecret`、数据库密码、JWT 密钥不要提交到仓库。泄露了立刻去微信公众平台重置。
+
+### 3.1 配置 AI 写作（可选）
+
+AI 相关配置都在 `src/main/resources/application-ai.yml`，已通过 `spring.profiles.include: ai` 默认启用：
+
+```yaml
+agentscope:
+  ai:
+    llm:
+      base-url: ${AI_BASE_URL:http://192.168.1.62:8000/v1}
+      api-key: ${AI_API_KEY:EMPTY}
+      model-name: ${AI_MODEL:Qwen3.5-35B-A3B-GPTQ-Int4}
+      stream: true
+      temperature: 0.8
+      max-tokens: 4096
+
+    # 写作场景默认不记忆、不压缩
+    memory:
+      enabled: false
+      compaction-enabled: false
+      compaction-trigger-messages: 30
+      compaction-keep-messages: 10
+
+    writing:
+      workspace: ./.agentscope/ai-writer
+      timeout-seconds: 300
+      max-requirement-chars: 2000
+```
+
+启动时用环境变量覆盖即可，不必改文件：
+
+```bash
+AI_BASE_URL=http://127.0.0.1:8000/v1 AI_API_KEY=EMPTY AI_MODEL=your-model \
+java -jar target/weixin-public-1.0-SNAPSHOT.jar
+```
+
+| 配置 | 说明 |
+| --- | --- |
+| `llm.base-url` | OpenAI 兼容接口地址，本地 vLLM 一般为 `http://host:8000/v1` |
+| `llm.model-name` | 模型名称 |
+| `memory.enabled` | 是否保留会话记忆，**写作场景建议关闭** |
+| `memory.compaction-enabled` | 是否压缩上下文，关闭时每次生成相互独立 |
+| `writing.timeout-seconds` | SSE 生成超时时间 |
+| `writing.max-requirement-chars` | 单次写作要求最大字数 |
+
+系统提示词在 `src/main/resources/prompts/system-prompt.st`，可直接调整文章结构、语气与合规要求。
 
 ### 4. 启动后端
 
@@ -180,7 +236,8 @@ npm run dev
 
 ```text
 登录后台
-  → Markdown 写正文（样式块 / 苹果代码框）
+  → （可选）AI 写作：选模板 + 写要求 → 流式生成 → 引用到编辑器
+  → Markdown 写正文 / 润色（样式块 / 苹果代码框）
   → 图片用编辑器上传到微信 CDN
   → 选择封面
   → 提交到草稿箱
@@ -189,6 +246,40 @@ npm run dev
 ```
 
 更多操作说明见后台「使用说明」页，或仓库内 `weixin-back/src/views/Guide.vue`。
+
+---
+
+## AI 写作
+
+入口：后台左侧 **AI 写作**（`/ai`）。
+
+1. 选择参考模板（可选，覆盖 14 个行业），或直接填写行业、目标读者、语气、篇幅
+2. 在「写作要求」里描述主题、角度与必须包含的信息
+3. 点击 **生成文章**，内容按 Markdown 实时流式输出；可随时点击 **停止**
+4. 生成完成后可复制 Markdown、查看排版预览，或 **引用到编辑器** 继续修改并提交草稿箱
+
+生成内容会按系统提示词输出 `# 标题`、导语、小节和 `:::wx-*` 样式块，风格与模板库保持一致。
+
+### 生成记录
+
+每次生成都会写入 `wx_ai_record` 表，包含标题、行业、模型、写作要求、Markdown 正文与状态。页面底部「生成记录」支持查看、引用和删除，写入草稿箱的状态仍在「发送记录」中查看。
+
+### 接口
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| POST | `/api/admin/ai/stream` | SSE 流式生成，事件：`meta` / `delta` / `done` / `error` |
+| POST | `/api/admin/ai/records/{id}/stop` | 停止生成 |
+| GET | `/api/admin/ai/records` | 生成记录列表 |
+| GET | `/api/admin/ai/records/{id}` | 记录详情（含 Markdown 正文） |
+| DELETE | `/api/admin/ai/records/{id}` | 删除记录 |
+| GET | `/api/admin/ai/config` | 当前模型与记忆/压缩开关 |
+
+以上接口均需要后台登录 Token（`Authorization: Bearer ...`）。
+
+### 记忆与压缩
+
+AI 写作默认是**单轮、无记忆**的：`memory.enabled=false`，每次生成互不影响，也不会写入会话状态。需要多轮连续对话时，可在 `application-ai.yml` 中打开记忆与压缩开关，并自行扩展会话接口。
 
 ---
 
@@ -226,6 +317,7 @@ npm run dev
 
 - 微信接口权限、草稿箱能力因账号类型与微信政策而异，使用前请自行核对  
 - 本工具只写入草稿箱，不负责群发结果与内容合规  
+- AI 生成内容可能存在事实错误或表述偏差，发布前请人工校对，并对最终内容负责  
 - 因密钥泄露、IP 未加白名单、微信侧限制导致的问题，请先自查配置  
 
 ---
