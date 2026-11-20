@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: weixin-public
+  profiles:
+    include: ai
   datasource:
     url: jdbc:mysql://127.0.0.1:3308/weixin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
@@ -12,6 +14,9 @@ spring:
   jackson:
     time-zone: Asia/Shanghai
     date-format: yyyy-MM-dd HH:mm:ss
+  mvc:
+    async:
+      request-timeout: 300000
   servlet:
     multipart:
       max-file-size: 10MB

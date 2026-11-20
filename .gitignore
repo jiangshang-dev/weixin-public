@@ -4,6 +4,8 @@ target/
 !**/src/test/**/target/
 .kotlin
 node_modules/
+.agentscope/
+weixin-back/dist/
 
 ### IntelliJ IDEA ###
 .idea/

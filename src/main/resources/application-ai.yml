@@ -1,0 +1,23 @@
+# AI 写作配置
+# 通过环境变量覆盖：AI_BASE_URL / AI_API_KEY / AI_MODEL
+agentscope:
+  ai:
+    llm:
+      base-url: ${AI_BASE_URL:https://token-plan.maas.qianwenaiapi.com/compatible-mode/v1}
+      api-key: ${AI_API_KEY:sk-sp-H.XMLRH.3bV8.MEUCIQC0szblwbLn6SWZp3UQuGbhHdplNK9chBhjTN7q1RrA0AIgbuXuTQNrBnq12XrvzikSaBoRk9kqr4WYPNg3Tdt9lbQ}
+      model-name: ${AI_MODEL:qwen4-max}
+      stream: true
+      temperature: 0.8
+      max-tokens: 14096
+
+    # 写作场景默认不记忆、不压缩；需要多轮对话时再打开
+    memory:
+      enabled: false
+      compaction-enabled: false
+      compaction-trigger-messages: 30
+      compaction-keep-messages: 10
+
+    writing:
+      workspace: ./.agentscope/ai-writer
+      timeout-seconds: 300
+      max-requirement-chars: 2000

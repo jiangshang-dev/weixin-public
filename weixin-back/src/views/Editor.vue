@@ -143,18 +143,37 @@
             <a-tag color="green">实时</a-tag>
           </div>
 
-          <div class="phone">
-            <div class="phone-bar">
-              <span>9:41</span>
-              <span class="phone-dots"><i></i><i></i><i></i></span>
-            </div>
-            <div class="phone-scroll">
-              <h1 class="wx-title">{{ form.title || '文章标题' }}</h1>
-              <div class="wx-meta">
-                <span>{{ form.author || '作者' }}</span>
-                <span class="wx-origin">原创</span>
+          <div class="device-bar">
+            <span class="device-label">设备</span>
+            <a-select
+              v-model:value="device"
+              size="small"
+              :options="DEVICE_OPTIONS"
+              class="device-select"
+            />
+          </div>
+
+          <div class="device-stage">
+            <div class="device" :class="`device--${device}`">
+              <div class="device-frame">
+                <div class="device-screen">
+                  <span v-if="device !== 'classic' && device !== 'duo'" class="device-island"></span>
+                  <span v-if="device === 'duo'" class="duo-crease"></span>
+                  <div class="device-status">
+                    <span class="device-time">9:41</span>
+                    <span class="device-signal"><i></i><i></i><i></i><b></b></span>
+                  </div>
+                  <div class="device-body">
+                    <h1 class="wx-title">{{ form.title || '文章标题' }}</h1>
+                    <div class="wx-meta">
+                      <span>{{ form.author || '作者' }}</span>
+                      <span class="wx-origin">原创</span>
+                    </div>
+                    <div class="wx-body" v-html="previewHtml"></div>
+                  </div>
+                  <span v-if="device !== 'classic'" class="home-indicator"></span>
+                </div>
               </div>
-              <div class="wx-body" v-html="previewHtml"></div>
             </div>
           </div>
 
@@ -188,6 +207,15 @@ const editorRef = ref(null)
 const styleOpen = ref(false)
 const fromHistory = ref(false)
 const pickedTemplate = ref(undefined)
+
+const DEVICE_OPTIONS = [
+  { value: 'classic', label: '经典预览' },
+  { value: 'duo', label: 'iPhone Duo' },
+  { value: 'iphone18', label: 'iPhone 18' },
+  { value: 'iphone18pro', label: 'iPhone 18 Pro' },
+  { value: 'iphone18promax', label: 'iPhone 18 Pro Max' }
+]
+const device = ref('classic')
 
 const form = reactive({
   title: '从这里开始写',
@@ -367,11 +395,30 @@ async function loadFromHistory(id) {
   }
 }
 
+async function loadAiRecord(id) {
+  if (!id) return
+  const record = await http.get(`/api/admin/ai/records/${id}`)
+  if (!record.contentMd) {
+    message.warning('这条 AI 记录还没有生成内容')
+    return
+  }
+  form.content = record.contentMd
+  const heading = record.contentMd.match(/^\s*#\s+(.+)$/m)
+  form.title = record.title || (heading ? heading[1].trim() : '')
+  form.digest = ''
+  coverFile.value = null
+  coverUrl.value = ''
+  fromHistory.value = false
+  message.success('已引用 AI 生成内容，选择封面后即可提交')
+}
+
 watch(
-  () => [route.query.template, route.query.id],
-  ([templateId, id]) => {
+  () => [route.query.template, route.query.id, route.query.aiId],
+  ([templateId, id, aiId]) => {
     if (templateId) {
       applyTemplate(templateId)
+    } else if (aiId) {
+      loadAiRecord(aiId)
     } else if (id) {
       loadFromHistory(id)
     }
@@ -648,35 +695,263 @@ watch(
 .preview-panel {
   padding-bottom: 14px;
 }
-.phone {
-  border: 1px solid var(--wx-line);
-  border-radius: 18px;
-  background: #fff;
-  overflow: hidden;
+
+/* ---------- 设备切换 ---------- */
+.device-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
 }
-.phone-bar {
+.device-label {
+  flex: none;
+  font-size: 11.5px;
+  letter-spacing: 1px;
+  color: #a3ada8;
+}
+.device-select {
+  flex: 1;
+}
+.device-select :deep(.ant-select-selector) {
+  border-radius: 8px !important;
+  background: #fbfaf7;
+  font-size: 12.5px;
+}
+
+/* ---------- 手机外壳 ---------- */
+.device-stage {
+  display: flex;
+  justify-content: center;
+  padding: 2px 0 4px;
+}
+.device {
+  --screen-w: 262px;
+  --frame-pad: 3px;
+  --ratio: 0.461;
+  --frame-bg: linear-gradient(145deg, #f6f7f8 0%, #d9dde1 34%, #a9afb6 66%, #eceef0 100%);
+  --frame-radius: 42px;
+  --screen-radius: 35px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.device-frame {
+  position: relative;
+  width: min(calc(var(--screen-w) + var(--frame-pad) * 2), 100%);
+  padding: var(--frame-pad);
+  border-radius: var(--frame-radius);
+  background: var(--frame-bg);
+  box-shadow:
+    0 18px 36px rgba(19, 35, 30, 0.18),
+    0 3px 8px rgba(19, 35, 30, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+.device-frame::before,
+.device-frame::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #8a9097, #3c4146);
+}
+.device-frame::before {
+  top: 118px;
+  height: 56px;
+}
+.device-frame::after {
+  top: 186px;
+  height: 32px;
+}
+.device-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  aspect-ratio: var(--ratio);
+  overflow: hidden;
+  border: 6px solid #0b0c0e;
+  border-radius: var(--screen-radius);
+  background: #ffffff;
+}
+.device-island {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  z-index: 3;
+  width: 76px;
+  height: 22px;
+  border-radius: 12px;
+  background: #050607;
+  transform: translateX(-50%);
+}
+.device-island::after {
+  content: '';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #33475a, #0a1118 70%);
+  transform: translateY(-50%);
+}
+.device--iphone18 .device-island {
+  width: 68px;
+  height: 20px;
+}
+
+.device-status {
+  position: relative;
+  z-index: 2;
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 14px;
-  font-size: 11px;
+  height: 40px;
+  padding: 12px 20px 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #2f3b36;
+  background: #ffffff;
+}
+.device-time {
+  letter-spacing: 0.3px;
+}
+.device-signal {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.device-signal i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c2cbc7;
+}
+.device-signal b {
+  position: relative;
+  width: 17px;
+  height: 8px;
+  border: 1px solid #c2cbc7;
+  border-radius: 2.5px;
+}
+.device-signal b::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 1px;
+  background: #8fd1bb;
+}
+.device-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 12px 24px;
+}
+.device-body::-webkit-scrollbar {
+  width: 3px;
+}
+.device-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+.home-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  z-index: 4;
+  width: 104px;
+  height: 4px;
+  border-radius: 3px;
+  background: #111111;
+  opacity: 0.8;
+  transform: translateX(-50%);
+}
+
+/* ---------- 各机型 ---------- */
+.device--iphone18pro {
+  --screen-w: 270px;
+  --frame-pad: 4px;
+  --frame-bg: linear-gradient(145deg, #66707c, #2f353d 40%, #12161a 70%, #4d5560 100%);
+}
+.device--iphone18promax {
+  --screen-w: 282px;
+  --frame-pad: 5px;
+  --frame-bg: linear-gradient(145deg, #8a8069, #453e34 42%, #1a1816 72%, #6b5f49 100%);
+}
+.device--duo {
+  --screen-w: 320px;
+  --frame-pad: 4px;
+  --ratio: 0.95;
+  --frame-radius: 26px;
+  --screen-radius: 20px;
+  --frame-bg: linear-gradient(145deg, #565c63, #2a2e33 42%, #131518 72%, #454a50);
+}
+.device--duo .device-frame::before {
+  top: 64px;
+  height: 46px;
+}
+.device--duo .device-frame::after {
+  top: 128px;
+  height: 26px;
+}
+.device--duo .device-status {
+  height: 34px;
+  padding: 0 16px;
+}
+.duo-crease {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  z-index: 2;
+  width: 18px;
+  pointer-events: none;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.02) 35%,
+    rgba(0, 0, 0, 0.055) 50%,
+    rgba(0, 0, 0, 0.02) 65%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.25);
+}
+
+/* 保留原有经典预览 */
+.device--classic {
+  --screen-w: 320px;
+  --ratio: 0.5714;
+  --frame-radius: 24px;
+  --screen-radius: 24px;
+}
+.device--classic .device-frame {
+  width: min(320px, 100%);
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+.device--classic .device-frame::before,
+.device--classic .device-frame::after {
+  display: none;
+}
+.device--classic .device-screen {
+  border: 1px solid var(--wx-line);
+}
+.device--classic .device-status {
+  height: 30px;
+  padding: 0 14px;
+  font-weight: 400;
   color: #8a938f;
   background: #fafaf8;
 }
-.phone-dots {
-  display: flex;
-  gap: 3px;
-}
-.phone-dots i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
+.device--classic .device-signal b::after {
   background: #d3d8d5;
 }
-.phone-scroll {
-  max-height: 560px;
-  overflow-y: auto;
-  padding: 18px 16px 24px;
+.device--classic .device-body {
+  padding: 14px 16px 20px;
 }
 .wx-title {
   margin: 0;

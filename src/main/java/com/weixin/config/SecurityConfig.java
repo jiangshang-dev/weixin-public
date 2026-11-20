@@ -3,6 +3,7 @@ package com.weixin.config;
 import cn.hutool.json.JSONUtil;
 import com.weixin.common.R;
 import com.weixin.security.JwtAuthFilter;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +39,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> write(response, 401, "请先登录"))
                         .accessDeniedHandler((request, response, accessDeniedException) -> write(response, 403, "没有权限")))
                 .authorizeHttpRequests(auth -> auth
+                        // SSE 异步派发不再重复鉴权，避免响应已提交后的二次异常
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
                         .requestMatchers("/api/admin/login").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().permitAll())

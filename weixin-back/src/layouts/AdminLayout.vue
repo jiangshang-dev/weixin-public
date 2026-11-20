@@ -73,7 +73,8 @@ import {
   EditOutlined,
   HistoryOutlined,
   LogoutOutlined,
-  QuestionCircleOutlined
+  QuestionCircleOutlined,
+  RobotOutlined
 } from '@ant-design/icons-vue'
 import http from '../api/http'
 
@@ -83,6 +84,7 @@ const me = reactive({ username: '', realName: '', ip: '' })
 
 const menus = [
   { path: '/editor', label: '写草稿', icon: EditOutlined },
+  { path: '/ai', label: 'AI 写作', icon: RobotOutlined },
   { path: '/templates', label: '模板库', icon: AppstoreOutlined },
   { path: '/articles', label: '发送记录', icon: HistoryOutlined },
   { path: '/guide', label: '使用说明', icon: QuestionCircleOutlined }
