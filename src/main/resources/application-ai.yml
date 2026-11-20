@@ -4,7 +4,7 @@ agentscope:
   ai:
     llm:
       base-url: ${AI_BASE_URL:https://token-plan.maas.qianwenaiapi.com/compatible-mode/v1}
-      api-key: ${AI_API_KEY:sk-sp-H.XMLRH.3bV8.MEUCIQC0szblwbLn6SWZp3UQuGbhHdplNK9chBhjTN7q1RrA0AIgbuXuTQNrBnq12XrvzikSaBoRk9kqr4WYPNg3Tdt9lbQ}
+      api-key: ${AI_API_KEY:your-key}
       model-name: ${AI_MODEL:qwen4-max}
       stream: true
       temperature: 0.8
